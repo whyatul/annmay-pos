@@ -52,6 +52,21 @@ const addMenuItem = async (req, res, next) => {
       return next(createHttpError(400, "Name, price, and categoryId are required"));
     }
 
+    // Validate price
+    const trimmedPrice = typeof price === "string" ? price.trim() : String(price);
+    const validatedPrice = parseFloat(trimmedPrice);
+    if (!Number.isFinite(validatedPrice) || validatedPrice <= 0) {
+      return next(createHttpError(400, "Price must be a positive number"));
+    }
+
+    // Validate isVeg – only explicit true/"true" is truthy; everything else is false
+    let validatedIsVeg = false;
+    if (typeof isVeg === "boolean") {
+      validatedIsVeg = isVeg;
+    } else if (typeof isVeg === "string") {
+      validatedIsVeg = isVeg.toLowerCase() === "true";
+    }
+
     const category = await Category.findByPk(categoryId);
     if (!category) return next(createHttpError(404, "Category not found"));
 
@@ -62,9 +77,9 @@ const addMenuItem = async (req, res, next) => {
 
     const menuItem = await MenuItem.create({
       name,
-      price: parseFloat(price),
+      price: validatedPrice,
       categoryId: parseInt(categoryId),
-      isVeg: isVeg === "false" ? false : true,
+      isVeg: validatedIsVeg,
       image: imagePath,
     });
 

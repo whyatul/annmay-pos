@@ -7,7 +7,7 @@ const MenuItem = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: DataTypes.STRING, allowNull: false },
-    price: { type: DataTypes.FLOAT, allowNull: false },
+    price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
     image: { type: DataTypes.STRING, allowNull: true },
     isVeg: { type: DataTypes.BOOLEAN, defaultValue: true },
   },

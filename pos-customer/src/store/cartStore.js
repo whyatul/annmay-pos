@@ -10,7 +10,12 @@ const useCartStore = create((set, get) => ({
         return {
           items: state.items.map((i) =>
             i.id === item.id
-              ? { ...i, quantity: i.quantity + 1, price: i.pricePerQuantity * (i.quantity + 1) }
+              ? {
+                  ...i,
+                  pricePerQuantity: item.pricePerQuantity,
+                  quantity: i.quantity + 1,
+                  price: item.pricePerQuantity * (i.quantity + 1),
+                }
               : i
           ),
         };
@@ -27,13 +32,19 @@ const useCartStore = create((set, get) => ({
     set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
 
   updateQuantity: (id, quantity) =>
-    set((state) => ({
-      items: state.items.map((i) =>
-        i.id === id
-          ? { ...i, quantity, price: i.pricePerQuantity * quantity }
-          : i
-      ),
-    })),
+    set((state) => {
+      const safeQty = Math.floor(Number(quantity));
+      if (!Number.isFinite(safeQty) || safeQty <= 0) {
+        return { items: state.items.filter((i) => i.id !== id) };
+      }
+      return {
+        items: state.items.map((i) =>
+          i.id === id
+            ? { ...i, quantity: safeQty, price: i.pricePerQuantity * safeQty }
+            : i
+        ),
+      };
+    }),
 
   clearCart: () => set({ items: [] }),
 

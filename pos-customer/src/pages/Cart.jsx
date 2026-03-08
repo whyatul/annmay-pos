@@ -60,7 +60,7 @@ const Cart = () => {
         customerDetails: {
           name: form.name.trim(),
           phone: form.phone.trim(),
-          guests: Number(form.guests) || 1,
+          guests: Math.max(1, Math.floor(Number(form.guests)) || 1),
         },
         orderStatus: "In Progress",
         orderType: "Dine In",
