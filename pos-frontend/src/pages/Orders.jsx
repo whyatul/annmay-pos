@@ -1,67 +1,90 @@
 import React, { useState, useEffect } from "react";
-import BottomNav from "../components/shared/BottomNav";
 import OrderCard from "../components/orders/OrderCard";
-import BackButton from "../components/shared/BackButton";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { io } from "socket.io-client";
 import { getOrders } from "../https/index";
-import { enqueueSnackbar } from "notistack"
+import { enqueueSnackbar } from "notistack";
+
+const filters = [
+  { key: "all", label: "All" },
+  { key: "In Progress", label: "In Progress" },
+  { key: "Ready", label: "Ready" },
+  { key: "Completed", label: "Completed" },
+  { key: "Cancelled", label: "Cancelled" },
+];
 
 const Orders = () => {
+  const queryClient = useQueryClient();
 
+  useEffect(() => {
+    const socket = io("http://localhost:8000");
+    socket.on("newOrder", () => {
+      queryClient.invalidateQueries(["orders"]);
+    });
+    socket.on("orderUpdated", () => {
+      queryClient.invalidateQueries(["orders"]);
+    });
+    return () => socket.disconnect();
+  }, [queryClient]);
   const [status, setStatus] = useState("all");
 
-    useEffect(() => {
-      document.title = "POS | Orders"
-    }, [])
+  useEffect(() => {
+    document.title = "POS | Orders";
+  }, []);
 
   const { data: resData, isError } = useQuery({
     queryKey: ["orders"],
-    queryFn: async () => {
-      return await getOrders();
-    },
-    placeholderData: keepPreviousData
-  })
+    queryFn: async () => await getOrders(),
+    placeholderData: keepPreviousData,
+  });
 
-  if(isError) {
-    enqueueSnackbar("Something went wrong!", {variant: "error"})
+  if (isError) {
+    enqueueSnackbar("Something went wrong!", { variant: "error" });
   }
 
+  const allOrders = resData?.data?.data || [];
+  const filtered =
+    status === "all"
+      ? allOrders
+      : allOrders.filter((o) => o.orderStatus === status);
+
   return (
-    <section className="bg-[#1f1f1f]  h-[calc(100vh-5rem)] overflow-hidden">
-      <div className="flex items-center justify-between px-10 py-4">
+    <section className="bg-[#141414] h-full overflow-hidden flex flex-col">
+      <div className="flex items-center justify-between px-8 py-4">
         <div className="flex items-center gap-4">
-          <BackButton />
-          <h1 className="text-[#f5f5f5] text-2xl font-bold tracking-wider">
-            Orders
-          </h1>
+          <h1 className="text-[#f5f5f5] text-lg font-bold">Orders</h1>
+          <span className="text-xs text-[#666] bg-[#1a1a1a] border border-[#222] px-3 py-1 rounded-full">
+            {filtered.length} of {allOrders.length}
+          </span>
         </div>
-        <div className="flex items-center justify-around gap-4">
-          <button onClick={() => setStatus("all")} className={`text-[#ababab] text-lg ${status === "all" && "bg-[#383838] rounded-lg px-5 py-2"}  rounded-lg px-5 py-2 font-semibold`}>
-            All
-          </button>
-          <button onClick={() => setStatus("progress")} className={`text-[#ababab] text-lg ${status === "progress" && "bg-[#383838] rounded-lg px-5 py-2"}  rounded-lg px-5 py-2 font-semibold`}>
-            In Progress
-          </button>
-          <button onClick={() => setStatus("ready")} className={`text-[#ababab] text-lg ${status === "ready" && "bg-[#383838] rounded-lg px-5 py-2"}  rounded-lg px-5 py-2 font-semibold`}>
-            Ready
-          </button>
-          <button onClick={() => setStatus("completed")} className={`text-[#ababab] text-lg ${status === "completed" && "bg-[#383838] rounded-lg px-5 py-2"}  rounded-lg px-5 py-2 font-semibold`}>
-            Completed
-          </button>
+        <div className="flex items-center gap-1.5 bg-[#1a1a1a] rounded-xl p-1 border border-[#222]">
+          {filters.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStatus(f.key)}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                status === f.key
+                  ? "bg-[#f6b100] text-[#111]"
+                  : "text-[#888] hover:text-[#f5f5f5]"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 px-16 py-4 overflow-y-scroll scrollbar-hide">
-        {
-          resData?.data.data.length > 0 ? (
-            resData.data.data.map((order) => {
-              return <OrderCard key={order._id} order={order} />
-            })
-          ) : <p className="col-span-3 text-gray-500">No orders available</p>
-        }
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-8 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {filtered.length > 0 ? (
+            filtered.map((order) => <OrderCard key={order.id} order={order} />)
+          ) : (
+            <p className="col-span-full text-[#555] text-sm text-center py-20">
+              No orders found
+            </p>
+          )}
+        </div>
       </div>
-
-      <BottomNav />
     </section>
   );
 };

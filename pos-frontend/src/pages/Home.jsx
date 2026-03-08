@@ -1,34 +1,75 @@
 import React, { useEffect } from "react";
-import BottomNav from "../components/shared/BottomNav";
 import Greetings from "../components/home/Greetings";
-import { BsCashCoin } from "react-icons/bs";
-import { GrInProgress } from "react-icons/gr";
 import MiniCard from "../components/home/MiniCard";
 import RecentOrders from "../components/home/RecentOrders";
 import PopularDishes from "../components/home/PopularDishes";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getOrders, getTables } from "../https";
+import { FaRupeeSign, FaSpinner, FaChair, FaClipboardList } from "react-icons/fa";
 
 const Home = () => {
+  useEffect(() => {
+    document.title = "POS | Home";
+  }, []);
 
-    useEffect(() => {
-      document.title = "POS | Home"
-    }, [])
+  const { data: ordersRes } = useQuery({
+    queryKey: ["orders"],
+    queryFn: getOrders,
+    placeholderData: keepPreviousData,
+  });
+
+  const { data: tablesRes } = useQuery({
+    queryKey: ["tables"],
+    queryFn: getTables,
+    placeholderData: keepPreviousData,
+  });
+
+  const orders = ordersRes?.data?.data || [];
+  const tables = tablesRes?.data?.data || [];
+  const activeOrders = orders.filter((o) => o.orderStatus !== "Cancelled");
+  const totalRevenue = activeOrders.reduce((sum, o) => sum + (o.totalWithTax || 0), 0);
+  const inProgress = orders.filter((o) => o.orderStatus === "In Progress").length;
+  const activeTables = tables.filter((t) => t.status === "Booked").length;
 
   return (
-    <section className="bg-[#1f1f1f]  h-[calc(100vh-5rem)] overflow-hidden flex gap-3">
-      {/* Left Div */}
-      <div className="flex-[3]">
+    <section className="bg-[#141414] h-full overflow-hidden flex">
+      {/* Left */}
+      <div className="flex-[3] flex flex-col overflow-hidden">
         <Greetings />
-        <div className="flex items-center w-full gap-3 px-8 mt-8">
-          <MiniCard title="Total Earnings" icon={<BsCashCoin />} number={512} footerNum={1.6} />
-          <MiniCard title="In Progress" icon={<GrInProgress />} number={16} footerNum={3.6} />
+        <div className="grid grid-cols-4 gap-3 px-8 mt-4">
+          <MiniCard
+            title="Revenue"
+            icon={<FaRupeeSign />}
+            value={`₹${totalRevenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`}
+            accent="#10b981"
+          />
+          <MiniCard
+            title="Orders"
+            icon={<FaClipboardList />}
+            value={orders.length}
+            accent="#f6b100"
+          />
+          <MiniCard
+            title="In Progress"
+            icon={<FaSpinner />}
+            value={inProgress}
+            accent="#f59e0b"
+          />
+          <MiniCard
+            title="Active Tables"
+            icon={<FaChair />}
+            value={`${activeTables}/${tables.length}`}
+            accent="#6366f1"
+          />
         </div>
-        <RecentOrders />
+        <div className="flex-1 overflow-hidden mt-2">
+          <RecentOrders />
+        </div>
       </div>
-      {/* Right Div */}
-      <div className="flex-[2]">
+      {/* Right */}
+      <div className="flex-[1.2] border-l border-[#222]">
         <PopularDishes />
       </div>
-      <BottomNav />
     </section>
   );
 };

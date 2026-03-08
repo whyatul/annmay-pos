@@ -10,32 +10,33 @@ const Greetings = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const getGreeting = () => {
+    const h = dateTime.getHours();
+    if (h < 12) return "Good Morning";
+    if (h < 17) return "Good Afternoon";
+    return "Good Evening";
+  };
+
   const formatDate = (date) => {
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return `${months[date.getMonth()]} ${String(date.getDate()).padStart(2, '0')}, ${date.getFullYear()}`;
+    return date.toLocaleDateString("en-IN", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   };
 
   const formatTime = (date) =>
-    `${String(date.getHours()).padStart(2, "0")}:${String(
-      date.getMinutes()
-    ).padStart(2, "0")}:${String(date.getSeconds()).padStart(2, "0")}`;
+    date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
 
   return (
-    <div className="flex justify-between items-center px-8 mt-5">
+    <div className="flex justify-between items-center px-8 pt-6 pb-2">
       <div>
-        <h1 className="text-[#f5f5f5] text-2xl font-semibold tracking-wide">
-          Good Morning, {userData.name || "TEST USER"}
+        <h1 className="text-[#f5f5f5] text-2xl font-bold tracking-wide">
+          {getGreeting()}, <span className="text-[#f6b100]">{userData.name?.split(' ')[0] || "User"}</span>
         </h1>
-        <p className="text-[#ababab] text-sm">
-          Give your best services for customers 😀
+        <p className="text-[#666] text-sm mt-1">
+          Manage your restaurant operations efficiently
         </p>
       </div>
-      <div>
-        <h1 className="text-[#f5f5f5] text-3xl font-bold tracking-wide w-[130px]">{formatTime(dateTime)}</h1>
-        <p className="text-[#ababab] text-sm">{formatDate(dateTime)}</p>
+      <div className="bg-[#161616] border border-[#222] rounded-xl px-5 py-3 text-right">
+        <h1 className="text-[#f6b100] text-2xl font-bold tracking-wider font-mono">{formatTime(dateTime)}</h1>
+        <p className="text-[#666] text-xs mt-0.5">{formatDate(dateTime)}</p>
       </div>
     </div>
   );

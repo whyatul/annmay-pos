@@ -25,3 +25,5 @@ Payment.belongsTo(Order, { foreignKey: "orderId" });
 Order.hasMany(Payment, { foreignKey: "orderId" });
 
 module.exports = Payment;
+
+module.exports = Payment;

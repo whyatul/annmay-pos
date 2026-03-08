@@ -10,6 +10,11 @@ const Order = sequelize.define(
     customerPhone: { type: DataTypes.STRING, allowNull: false },
     guests: { type: DataTypes.INTEGER, allowNull: false },
 
+    orderType: {
+      type: DataTypes.STRING,
+      defaultValue: "Dine In",
+      allowNull: false,
+    },
     orderStatus: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -32,7 +37,7 @@ const Order = sequelize.define(
   { timestamps: true }
 );
 
-Order.belongsTo(Table, { foreignKey: "tableId" });
+Order.belongsTo(Table, { foreignKey: { name: "tableId", allowNull: true } });
 Table.hasMany(Order, { foreignKey: "tableId" });
 
 module.exports = Order;

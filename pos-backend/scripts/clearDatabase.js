@@ -1,27 +1,18 @@
-const { sequelize } = require("../config/database");
-const User = require("../models/userModel");
-const Table = require("../models/tableModel");
-const Order = require("../models/orderModel");
-const Payment = require("../models/paymentModel");
+require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
+const { sequelize, connectDB } = require("../config/database");
 
 const clearDatabase = async () => {
   try {
     console.log("🗑️  Starting database cleanup...");
+    await connectDB();
 
-    await sequelize.authenticate();
-    console.log("✅ Connected to PostgreSQL");
+    // Drop all tables and recreate
+    await sequelize.drop();
+    console.log("✅ All tables dropped");
 
-    await Payment.destroy({ where: {} });
-    console.log("✅ Payments table cleared");
-
-    await Order.destroy({ where: {} });
-    console.log("✅ Orders table cleared");
-
-    await Table.destroy({ where: {} });
-    console.log("✅ Tables table cleared");
-
-    await User.destroy({ where: {} });
-    console.log("✅ Users table cleared");
+    // Re-sync to recreate empty tables
+    await sequelize.sync({ force: true });
+    console.log("✅ Empty tables recreated");
 
     console.log("🎉 Database cleanup completed successfully!");
     process.exit(0);

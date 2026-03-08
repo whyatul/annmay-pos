@@ -22,8 +22,12 @@ const connectDB = async () => {
     require("../models/tableModel");
     require("../models/orderModel");
     require("../models/paymentModel");
+    require("../models/categoryModel");
+    require("../models/menuItemModel");
+    require("../models/ingredientModel");
+    require("../models/recipeModel");
 
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log("✅ PostgreSQL schema synced");
   } catch (error) {
     console.log(`❌ Database connection failed: ${error.message}`);

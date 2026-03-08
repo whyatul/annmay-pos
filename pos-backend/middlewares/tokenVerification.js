@@ -16,7 +16,7 @@ const isVerifiedUser = async (req, res, next) => {
 
         const decodeToken = jwt.verify(accessToken, config.accessTokenSecret);
 
-        const user = await User.findById(decodeToken._id);
+        const user = await User.findByPk(decodeToken.id);
         if(!user){
             const error = createHttpError(401, "User not exist!");
             return next(error);

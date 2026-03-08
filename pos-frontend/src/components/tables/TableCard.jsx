@@ -1,33 +1,63 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { getAvatarName, getBgColor } from "../../utils"
+import { getAvatarName } from "../../utils";
 import { useDispatch } from "react-redux";
 import { updateTable } from "../../redux/slices/customerSlice";
-import { FaLongArrowAltRight } from "react-icons/fa";
 
-const TableCard = ({id, name, status, initials, seats}) => {
+const TableCard = ({ id, name, status, initials, seats }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const handleClick = (name) => {
-    if(status === "Booked") return;
 
-    const table = { tableId: id, tableNo: name }
-    dispatch(updateTable({table}))
-    navigate(`/menu`);
+  const handleClick = () => {
+    if (status === "Booked") return;
+    dispatch(updateTable({ table: { tableId: id, tableNo: name } }));
+    navigate("/menu");
   };
 
+  const isBooked = status === "Booked";
+
   return (
-    <div onClick={() => handleClick(name)} key={id} className="w-[300px] hover:bg-[#2c2c2c] bg-[#262626] p-4 rounded-lg cursor-pointer">
-      <div className="flex items-center justify-between px-1">
-        <h1 className="text-[#f5f5f5] text-xl font-semibold">Table <FaLongArrowAltRight className="text-[#ababab] ml-2 inline" /> {name}</h1>
-        <p className={`${status === "Booked" ? "text-green-600 bg-[#2e4a40]" : "bg-[#664a04] text-white"} px-2 py-1 rounded-lg`}>
+    <div
+      onClick={handleClick}
+      className={`group bg-[#1a1a1a] border rounded-xl p-4 transition-all duration-200 ${
+        isBooked
+          ? "border-emerald-500/20 cursor-default"
+          : "border-[#222] hover:border-[#f6b100]/40 cursor-pointer"
+      }`}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-[#f5f5f5] text-base font-bold">T-{name}</h2>
+        <span
+          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+            isBooked
+              ? "bg-emerald-500/15 text-emerald-400"
+              : "bg-[#f6b100]/15 text-[#f6b100]"
+          }`}
+        >
           {status}
-        </p>
+        </span>
       </div>
-      <div className="flex items-center justify-center mt-5 mb-8">
-        <h1 className={`text-white rounded-full p-5 text-xl`} style={{backgroundColor : initials ? getBgColor() : "#1f1f1f"}} >{getAvatarName(initials) || "N/A"}</h1>
+
+      <div className="flex items-center justify-center py-4">
+        <div
+          className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold ${
+            isBooked
+              ? "bg-emerald-500/15 text-emerald-400"
+              : "bg-[#222] text-[#555]"
+          }`}
+        >
+          {getAvatarName(initials) || "—"}
+        </div>
       </div>
-      <p className="text-[#ababab] text-xs">Seats: <span className="text-[#f5f5f5]">{seats}</span></p>
+
+      <div className="flex items-center justify-between mt-2">
+        <p className="text-[#555] text-xs">{seats} seats</p>
+        {!isBooked && (
+          <p className="text-[10px] text-[#f6b100] opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
+            Select →
+          </p>
+        )}
+      </div>
     </div>
   );
 };

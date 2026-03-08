@@ -57,4 +57,23 @@ const updateTable = async (req, res, next) => {
   }
 };
 
-module.exports = { addTable, getTables, updateTable };
+const deleteTable = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const table = await Table.findByPk(id);
+    if (!table) {
+      const error = createHttpError(404, "Table not found!");
+      return next(error);
+    }
+    if (table.status === "Booked") {
+      const error = createHttpError(400, "Cannot delete a booked table!");
+      return next(error);
+    }
+    await table.destroy();
+    res.status(200).json({ success: true, message: "Table deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { addTable, getTables, updateTable, deleteTable };

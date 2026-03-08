@@ -5,7 +5,8 @@ const initialState = {
     customerName: "",
     customerPhone: "",
     guests: 0,
-    table: null
+    table: null,
+    orderType: "Dine In"
 }
 
 
@@ -14,11 +15,12 @@ const customerSlice = createSlice({
     initialState,
     reducers : {
         setCustomer: (state, action) => {
-            const { name, phone, guests } = action.payload;
+            const { name, phone, guests, orderType } = action.payload;
             state.orderId = `${Date.now()}`;
             state.customerName = name;
             state.customerPhone = phone;
             state.guests = guests;
+            state.orderType = orderType || "Dine In";
         },
 
         removeCustomer: (state) => {
@@ -26,6 +28,7 @@ const customerSlice = createSlice({
             state.customerPhone = "";
             state.guests = 0;
             state.table = null;
+            state.orderType = "Dine In";
         },
 
         updateTable: (state, action) => {
