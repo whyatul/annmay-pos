@@ -25,3 +25,23 @@ export const addOrder = (data) => axiosWrapper.post("/api/order/", data);
 export const getOrders = () => axiosWrapper.get("/api/order");
 export const updateOrderStatus = ({ orderId, orderStatus }) =>
   axiosWrapper.put(`/api/order/${orderId}`, { orderStatus });
+
+// Menu Endpoints
+export const getCategories = () => axiosWrapper.get("/api/menu/categories");
+export const getMenuItems = () => axiosWrapper.get("/api/menu/items");
+export const addCategory = (data) => axiosWrapper.post("/api/menu/categories", data);
+export const addMenuItem = (data) =>
+  axiosWrapper.post("/api/menu/items", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+// Billing Settings (stub – returns defaults until settings API exists)
+export const getBillingSettings = () =>
+  Promise.resolve({
+    data: {
+      data: {
+        taxes: [{ name: "GST", rate: 5 }],
+        currency: "₹",
+      },
+    },
+  });
